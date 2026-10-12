@@ -1,0 +1,534 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini-Games: How AI Recognizes Sounds and Movement</title><style>*{box-sizing:border-box}
+html{background:#eceef9}
+:root{--ink:#1c2250;--muted:#4b5384;--card:#fff;--line:#d9def3;--indigo:#4a52c9;--moon:#f3c44f;--teal:#1fa79c;--coral:#e9604f;--lilac:#8a68dc;--sky:#3a8ee0;--soft:#f3f5fe}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:19px;line-height:1.5;color:var(--ink);min-height:100vh;
+background:
+radial-gradient(circle at calc(100% - 90px) 120px,#fffdf3 0 48px,#fbeeb9 49px 54px,rgba(251,238,185,.5) 55px 105px,rgba(251,238,185,0) 230px),
+radial-gradient(circle at 8% 22%,#b3bcea 0 2px,transparent 3px),
+radial-gradient(circle at 22% 9%,#c7b8ef 0 2px,transparent 3px),
+radial-gradient(circle at 41% 16%,#b3bcea 0 1.5px,transparent 2.5px),
+radial-gradient(circle at 63% 7%,#c7b8ef 0 2px,transparent 3px),
+radial-gradient(circle at 74% 28%,#b3bcea 0 1.5px,transparent 2.5px),
+radial-gradient(circle at 5% 64%,#c7b8ef 0 2px,transparent 3px),
+radial-gradient(circle at 95% 58%,#b3bcea 0 2px,transparent 3px),
+radial-gradient(circle at 33% 88%,#c7b8ef 0 1.5px,transparent 2.5px),
+radial-gradient(circle at 82% 92%,#b3bcea 0 2px,transparent 3px),
+linear-gradient(170deg,#edf1fc 0%,#e6e5f8 55%,#f3eefb 100%);
+background-attachment:fixed}
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:10px 22px;background:rgba(255,255,255,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.brand{font-size:14px;font-weight:700;color:var(--indigo);letter-spacing:.3px}
+.lvl{font-size:14px;color:var(--muted);flex:1}
+.homebtn{font:inherit;font-size:15px;font-weight:700;background:#fff;border:2px solid var(--line);color:var(--indigo);border-radius:12px;padding:6px 14px;cursor:pointer}
+main{max-width:1120px;margin:0 auto;padding:24px 18px 70px}
+.page{display:none;animation:fade .35s}
+.page.show{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.luna{display:inline-block;width:110px}
+.luna svg{width:100%;height:auto;display:block}
+.big-luna{width:170px;animation:float 3.2s ease-in-out infinite}
+.title-card{min-height:76vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+.title-card h1{font-size:clamp(36px,5.4vw,60px);line-height:1.15;margin:6px 0 10px;max-width:900px}
+.chap{font-size:17px;font-weight:700;color:var(--lilac);background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 18px}
+.menu-h{font-size:36px;margin:4px 0 4px}
+.menu-sub{color:var(--muted);margin:0 0 18px}
+.grp-h{display:inline-block;font-weight:700;font-size:18px;padding:6px 16px;border-radius:999px;background:#fff;border:2px solid var(--line);margin:18px 0 12px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:16px}
+.mcard{font:inherit;position:relative;text-align:left;background:#fff;border:1px solid var(--line);border-top:7px solid var(--indigo);border-radius:20px;padding:16px 18px;cursor:pointer;display:flex;flex-direction:column;gap:6px;box-shadow:0 6px 20px rgba(60,70,150,.08);transition:transform .15s,box-shadow .15s;color:var(--ink)}
+.mcard:hover{transform:translateY(-4px);box-shadow:0 12px 26px rgba(60,70,150,.15)}
+.mcard.g-Do{border-top-color:var(--teal)}.mcard.g-Wrap{border-top-color:var(--coral)}
+.mnum{position:absolute;top:12px;right:14px;width:30px;height:30px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:15px;color:var(--muted)}
+.mcard.done .mnum{background:var(--moon);color:var(--ink)}
+.mcard.done .mnum::after{content:"⭐";position:absolute;font-size:14px;top:-8px;right:-8px}
+.mic{font-size:40px;line-height:1}
+.mt{font-size:21px;font-weight:700}
+.mm{font-size:15px;color:var(--muted)}
+.sec-head{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.sec-ic{font-size:42px;min-width:76px;height:76px;border-radius:22px;background:#fff;display:grid;place-items:center;border:2px solid var(--line)}
+.sec-kick{font-size:15px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.sec-title{font-size:34px;margin:0;line-height:1.2}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+.badge{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(90deg,#4a52c9,#8a68dc);color:#fff;border-radius:999px;padding:4px 13px;font-size:13px;font-weight:700}
+.badge.b2{background:linear-gradient(90deg,#1fa79c,#3a8ee0)}
+.badge.b3{background:linear-gradient(90deg,#e9604f,#f39a3d)}
+.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px 24px;box-shadow:0 6px 22px rgba(60,70,150,.08);margin-bottom:18px}
+.card h3{margin:0 0 10px;font-size:25px}
+.card p{margin:6px 0}
+.muted{color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:16px}
+.btn{font:inherit;font-weight:700;border:none;border-radius:14px;padding:12px 20px;background:var(--indigo);color:#fff;cursor:pointer;box-shadow:0 4px 0 #343b9e;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #343b9e}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.teal{background:var(--teal);box-shadow:0 4px 0 #13786f}
+.btn.coral{background:var(--coral);box-shadow:0 4px 0 #b4402f}
+.btn.lilac{background:var(--lilac);box-shadow:0 4px 0 #6447b3}
+.btn.moon{background:var(--moon);color:var(--ink);box-shadow:0 4px 0 #c99a20}
+.btn.ghost{background:#fff;color:var(--indigo);border:2px solid var(--line);box-shadow:none}
+.btn.big{font-size:24px;padding:16px 36px;border-radius:18px}
+.btn.sm{font-size:16px;padding:8px 14px;border-radius:11px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.sec-nav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:28px}
+.slide{display:none;text-align:center;padding:10px 6px}
+.slide.on{display:block;animation:fade .4s}
+.scene{font-size:72px;line-height:1.2;margin:10px 0 14px;letter-spacing:6px}
+.story-text{font-size:24px;max-width:820px;margin:0 auto}
+.big-q{font-weight:700;color:var(--indigo)}
+.sl-ctrl{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px}
+.dots{display:flex;gap:8px}
+.dots i{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--moon);transform:scale(1.25)}
+.flip{perspective:900px;cursor:pointer;min-height:230px}
+.flip .in{position:relative;width:100%;min-height:230px;transition:transform .6s;transform-style:preserve-3d}
+.flip.on .in{transform:rotateY(180deg)}
+.flip .f,.flip .b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:22px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid var(--line)}
+.flip .f{background:#fff;box-shadow:0 6px 18px rgba(60,70,150,.08)}
+.flip .f .big{font-size:62px;line-height:1.1}
+.flip .f b{font-size:23px;margin-top:6px}
+.flip .f small{color:var(--muted);font-size:14px;margin-top:6px}
+.flip .b{background:linear-gradient(160deg,#4a52c9,#8a68dc);color:#fff;transform:rotateY(180deg);font-size:20px}
+.pipeline{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;justify-content:center}
+.pstep{background:var(--soft);border-radius:18px;padding:16px;text-align:center;min-width:170px;flex:1}
+.pstep .big{font-size:44px;line-height:1.2}
+.pstep b{display:block;font-size:21px}
+.pstep span{display:block;color:var(--muted);font-size:16px}
+.parrow{font-size:34px;color:var(--lilac);align-self:center}
+.chip{font:inherit;background:#fff;border:2px solid var(--line);border-radius:16px;padding:10px 12px;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;min-width:100px;color:var(--ink);transition:transform .12s}
+.chip:hover{transform:translateY(-2px)}
+.chip .big{font-size:42px;line-height:1.15}
+.chip small{font-size:15px;color:var(--muted)}
+.chip.sel{border-color:var(--moon);box-shadow:0 0 0 4px #fbe6a4}
+.chip.ok{border-color:var(--teal);background:#e6f7f5}
+.chip.bad{border-color:var(--coral);background:#fdecea}
+.tray{display:flex;flex-wrap:wrap;gap:10px;padding:14px;background:var(--soft);border-radius:18px;border:2px dashed var(--line);min-height:96px}
+.buckets{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.bucket{background:#fff;border:3px solid var(--line);border-radius:18px;padding:12px;min-height:150px;cursor:pointer}
+.bucket:hover{border-color:var(--indigo)}
+.bh{font-weight:700;font-size:20px;margin-bottom:8px}
+.bin{display:flex;flex-wrap:wrap;gap:8px}
+.fb{font-weight:700;font-size:20px;min-height:28px}
+.fb.good{color:#13786f}.fb.oops{color:#b4402f}
+.qcard{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px 20px;margin-bottom:14px}
+.qn{display:inline-block;background:var(--moon);border-radius:10px;padding:2px 10px;font-weight:700;font-size:14px}
+.qq{font-size:21px;font-weight:700;margin:8px 0}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.opt{font:inherit;text-align:left;background:var(--soft);border:2px solid var(--line);border-radius:14px;padding:12px 14px;cursor:pointer;color:var(--ink)}
+.opt:hover{border-color:var(--indigo)}
+.opt.right{background:#e3f6f3;border-color:var(--teal)}
+.opt.wrong{background:#fdebe8;border-color:var(--coral)}
+.why{margin:8px 0 0;color:var(--muted)}
+.score-box{text-align:center;font-size:26px;font-weight:700;background:linear-gradient(90deg,#fff6d6,#efeaff);border-radius:18px;padding:18px}
+.tip{background:#fff8e1;border-left:6px solid var(--moon);border-radius:12px;padding:12px 16px;margin:12px 0;font-size:17px}
+.tip.teacher{background:#eef0ff;border-left-color:var(--indigo)}
+.meter{height:24px;background:#eceffa;border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.meter>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal),var(--sky));transition:width .45s}
+.blk{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-radius:12px;color:#fff;font-weight:700;font-size:18px}
+.blk select,.blk input{font:inherit;font-size:17px;border-radius:8px;border:none;padding:4px 8px;color:var(--ink);background:#fff}
+.blk.if{background:#ef8d2c}.blk.and{background:#c77700}.blk.then{background:var(--indigo)}.blk.when{background:#d9a20a}.blk.do{background:var(--teal)}.blk.say{background:var(--lilac)}
+.rule{background:var(--soft);border-radius:16px;padding:10px 12px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:2px solid var(--line)}
+.codebox{background:#f6f4ff;border:2px solid #ddd6fb;border-radius:16px;padding:14px 16px;font-family:"Courier New",monospace;font-size:17px;white-space:pre-wrap;color:#2c2f6b;line-height:1.55}
+.codebox .k{color:#c2410c;font-weight:700}.codebox .s{color:#0f766e}.codebox .c{color:#7c7fa8}
+.res-table{width:100%;border-collapse:collapse;margin-top:10px}
+.res-table td,.res-table th{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+.res-table th{font-size:15px;color:var(--muted)}
+.discuss{display:grid;gap:14px}
+.dq{font-size:22px;font-weight:700}
+.ans{background:var(--soft);border-radius:12px;padding:10px 14px;margin-top:10px}
+.mission{background:linear-gradient(135deg,#fff8e1,#efeaff);border:2px solid #e9dcff}
+.mission li{margin:6px 0}
+.mission input{transform:scale(1.4);margin-right:10px}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(120px);background:var(--ink);color:#fff;padding:14px 22px;border-radius:16px;font-weight:700;z-index:99;transition:transform .35s;max-width:90vw;text-align:center}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.conf{position:fixed;top:-50px;font-size:30px;pointer-events:none;z-index:98;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(112vh) rotate(380deg)}}
+.pill{display:inline-block;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-size:15px;margin:2px}
+.center{text-align:center}
+@media(max-width:640px){body{font-size:17px}.sec-title{font-size:26px}.scene{font-size:52px}.story-text{font-size:20px}.menu-h{font-size:28px}}
+.starbar{display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);border-radius:999px;padding:6px 16px;font-weight:700;font-size:18px}
+.gcard{font:inherit;text-align:left;background:#fff;border:1px solid var(--line);border-left:8px solid var(--lilac);border-radius:20px;padding:16px 18px;cursor:pointer;display:flex;gap:14px;align-items:center;box-shadow:0 6px 20px rgba(60,70,150,.08);color:var(--ink);transition:transform .15s}
+.gcard:hover{transform:translateY(-3px)}
+.gcard.code{border-left-color:var(--teal)}
+.gcard .gi{font-size:44px;min-width:64px;height:64px;border-radius:18px;background:var(--soft);display:grid;place-items:center}
+.gcard .gt{font-size:21px;font-weight:700;display:block}
+.gcard .gd{font-size:15px;color:var(--muted);display:block}
+.gcard .gs{margin-left:auto;font-size:20px;white-space:nowrap}
+.ghead{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.ghead .gi{font-size:44px;min-width:72px;height:72px;border-radius:20px;background:#fff;border:2px solid var(--line);display:grid;place-items:center}
+.ghead h2{margin:0;font-size:32px}
+.pk-q{font-size:24px;font-weight:700;text-align:center;margin:8px 0 16px}
+.pk-big{font-size:64px;text-align:center;letter-spacing:8px;line-height:1.25}
+.pk-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.pk-opt{font:inherit;font-size:20px;background:#fff;border:3px solid var(--line);border-radius:18px;padding:14px;cursor:pointer;color:var(--ink);text-align:center}
+.pk-opt .e{display:block;font-size:46px;line-height:1.2}
+.pk-opt:hover{border-color:var(--indigo)}
+.pk-opt.right{border-color:var(--teal);background:#e6f7f5}
+.pk-opt.wrong{border-color:var(--coral);background:#fdecea}
+.prog{display:flex;gap:6px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.prog i{width:14px;height:14px;border-radius:50%;background:var(--line)}
+.prog i.ok{background:var(--teal)}.prog i.no{background:var(--coral)}.prog i.cur{background:var(--moon)}
+.mem{display:grid;gap:10px;max-width:640px;margin:0 auto}
+.mcell{font:inherit;aspect-ratio:1/1;border-radius:16px;border:2px solid var(--line);background:linear-gradient(160deg,#4a52c9,#8a68dc);color:#fff;font-size:34px;cursor:pointer;display:grid;place-items:center;padding:6px;text-align:center;line-height:1.15}
+.mcell.txt{font-size:16px;font-weight:700}
+.mcell.open{background:#fff;color:var(--ink);border-color:var(--moon)}
+.mcell.done{background:#e6f7f5;color:var(--ink);border-color:var(--teal);cursor:default}
+.pads{display:grid;grid-template-columns:repeat(2,minmax(120px,190px));gap:14px;justify-content:center}
+.pad{font:inherit;border:none;border-radius:24px;height:130px;font-size:56px;cursor:pointer;opacity:.75;transition:transform .1s,opacity .1s;box-shadow:0 5px 0 rgba(0,0,0,.12)}
+.pad small{display:block;font-size:16px;font-weight:700;color:#fff}
+.pad.lit{opacity:1;transform:scale(1.07);box-shadow:0 0 0 6px #fff,0 0 0 10px var(--moon)}
+.maze-wrap{display:grid;grid-template-columns:minmax(0,auto) minmax(260px,1fr);gap:18px;align-items:start}
+@media(max-width:820px){.maze-wrap{grid-template-columns:1fr}}
+.grid{display:grid;gap:4px;background:#dfe3f7;padding:8px;border-radius:18px;width:max-content;max-width:100%;margin:0 auto}
+.cell{width:var(--c);height:var(--c);border-radius:10px;background:#fff;display:grid;place-items:center;font-size:calc(var(--c)*.6);position:relative}
+.cell.rock{background:#c9cdea}
+.cell .luna{position:absolute;inset:3px;width:auto}
+.cell.trail{background:#fff8e1}
+.pal{display:flex;flex-wrap:wrap;gap:8px}
+.pal .btn{font-size:24px;padding:10px 16px}
+.cnt{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.cnt .btn{padding:6px 12px;font-size:17px}
+.cnt .btn.on{background:var(--moon);color:var(--ink);box-shadow:0 3px 0 #c99a20}
+.progline{display:flex;flex-wrap:wrap;gap:6px;min-height:58px;padding:10px;border-radius:14px;background:var(--soft);border:2px dashed var(--line);margin-top:10px}
+.pb{font:inherit;display:inline-flex;align-items:center;gap:4px;padding:6px 10px;border-radius:10px;background:var(--indigo);color:#fff;font-weight:700;font-size:18px;border:3px solid transparent;cursor:pointer}
+.pb.rep{background:var(--teal)}
+.pb.sel{border-color:var(--moon)}
+.pb.run{box-shadow:0 0 0 4px var(--moon)}
+.pb .x{font-size:13px;background:rgba(255,255,255,.3);border-radius:6px;padding:0 5px;margin-left:4px}
+.lvls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.lvls .btn{padding:6px 14px;font-size:16px}
+.lvls .btn.cur{background:var(--moon);color:var(--ink);box-shadow:0 3px 0 #c99a20}
+.endbox{text-align:center;background:linear-gradient(135deg,#fff8e1,#efeaff);border:2px solid #e9dcff;border-radius:22px;padding:22px;margin-top:14px}
+.endbox .stars{font-size:44px;letter-spacing:6px}
+.kidtip{background:#fff8e1;border-left:6px solid var(--moon);border-radius:12px;padding:10px 14px;margin:0 0 14px;font-size:17px}
+.codeq{background:#f6f4ff;border:2px solid #ddd6fb;border-radius:16px;padding:14px 16px;font-family:"Courier New",monospace;font-size:19px;white-space:pre-wrap;text-align:left;max-width:640px;margin:0 auto 14px;color:#2c2f6b}
+.codeq .k{color:#c2410c;font-weight:700}.codeq .s{color:#0f766e}
+.codeq .c{color:#7c7fa8}
+</style></head><body>
+<header class="top"><div class="brand">Young IT Germany</div><div class="lvl">Level 1 · AI Explorer · Mini-Games</div><span class="starbar">⭐ <span class="totStars">0</span></span><button class="homebtn" data-go="menu">🏠 Games</button></header>
+<main>
+<section class="page show" id="title"><div class="title-card"><div class="chap">🎮 Mini-Games &amp; Coding Puzzles</div><div class="luna big-luna"></div><h1>How AI Recognizes Sounds and Movement</h1><p class="muted" style="font-size:20px;max-width:640px">Play, practise and collect stars! No timers — take your time and replay as often as you like.</p><button class="btn big moon" data-go="menu">Start Playing ✨</button></div></section>
+<section class="page" id="menu"><div class="row" style="justify-content:space-between;margin:0 0 6px"><h2 class="menu-h" style="margin:0">How AI Recognizes Sounds and Movement</h2><span class="starbar">⭐ <span class="totStars">0</span> / <span id="tot"></span></span></div><p class="menu-sub">Pick any game. Earn up to 3 ⭐ in each one!</p><div id="gList"></div></section>
+</main><script>const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const LUNA=`<svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg"><line x1="60" y1="10" x2="60" y2="24" stroke="#4a52c9" stroke-width="4" stroke-linecap="round"/><path d="M60 1 l3.2 6.4 7 1-5 5 1.2 7-6.4-3.4-6.4 3.4 1.2-7-5-5 7-1z" fill="#f3c44f"/><circle cx="60" cy="52" r="30" fill="#fff4c9" stroke="#f3c44f" stroke-width="4"/><circle cx="75" cy="40" r="5" fill="#f6dd8a"/><circle cx="44" cy="66" r="4" fill="#f6dd8a"/><circle cx="49" cy="50" r="5.5" fill="#1c2250"/><circle cx="71" cy="50" r="5.5" fill="#1c2250"/><circle cx="51" cy="48" r="1.8" fill="#fff"/><circle cx="73" cy="48" r="1.8" fill="#fff"/><path d="M50 62 q10 8 20 0" stroke="#1c2250" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="39" cy="60" r="4" fill="#f9b4a8"/><circle cx="81" cy="60" r="4" fill="#f9b4a8"/><rect x="32" y="84" width="56" height="42" rx="14" fill="#8a68dc"/><rect x="44" y="93" width="32" height="20" rx="6" fill="#eef2fc"/><circle cx="52" cy="103" r="3" fill="#1fa79c"/><circle cx="60" cy="103" r="3" fill="#f3c44f"/><circle cx="68" cy="103" r="3" fill="#e9604f"/><rect x="18" y="89" width="12" height="26" rx="6" fill="#4a52c9"/><rect x="90" y="89" width="12" height="26" rx="6" fill="#4a52c9"/><rect x="40" y="124" width="12" height="13" rx="4" fill="#4a52c9"/><rect x="68" y="124" width="12" height="13" rx="4" fill="#4a52c9"/></svg>`;
+const App={onShow:{},shown:new Set(),done:new Set()};
+const GROUPS=[['Learn','🌙 Learn'],['Do','🚀 Do &amp; Build'],['Wrap','⭐ Wrap Up']];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function setup(){
+  $$('.luna').forEach(e=>e.innerHTML=LUNA);
+  const secs=$$('section.page[data-sec]');
+  secs.forEach(s=>s.id='s-'+s.dataset.sec);
+  const grid=$('#menuGrid');
+  GROUPS.forEach(([g,label])=>{
+    const list=secs.filter(s=>s.dataset.group===g); if(!list.length)return;
+    grid.insertAdjacentHTML('beforeend',`<div class="grp-h">${label}</div><div class="mgrid" id="mg-${g}"></div>`);
+    list.forEach(s=>{const i=secs.indexOf(s);
+      $('#mg-'+g).insertAdjacentHTML('beforeend',`<button class="mcard g-${g}" data-go="${s.id}"><span class="mnum">${i+1}</span><span class="mic">${s.dataset.icon}</span><span class="mt">${s.dataset.title}</span><span class="mm">⏱ ${s.dataset.min} min</span></button>`)});
+  });
+  secs.forEach((s,i)=>{
+    s.insertAdjacentHTML('afterbegin',`<div class="sec-head"><div class="sec-ic">${s.dataset.icon}</div><div><div class="sec-kick">Part ${i+1} of ${secs.length} · ${s.dataset.min} minutes</div><h2 class="sec-title">${s.dataset.title}</h2></div></div>`);
+    const nx=secs[i+1];
+    s.insertAdjacentHTML('beforeend',`<div class="sec-nav"><button class="btn ghost" data-go="menu">← Back to Menu</button>${nx?`<button class="btn" data-go="${nx.id}">Next: ${nx.dataset.title} →</button>`:`<button class="btn moon" data-go="menu">Finish 🌙</button>`}</div>`);
+  });
+  document.addEventListener('click',e=>{
+    const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go);return}
+    const f=e.target.closest('.flip'); if(f){f.classList.toggle('on');return}
+    const r=e.target.closest('[data-reveal]'); if(r){const t=r.nextElementSibling;t.hidden=!t.hidden;r.textContent=t.hidden?'💡 Show an idea':'🙈 Hide idea';return}
+    const sy=e.target.closest('[data-say]'); if(sy){const t=sy.dataset.say?$('.page.show '+sy.dataset.say):sy.closest('.card');if(t)say(t.innerText)}
+  });
+  $$('.slides').forEach(initSlides);
+}
+function go(id){
+  $$('.page').forEach(p=>p.classList.remove('show'));
+  const p=document.getElementById(id); if(!p)return; p.classList.add('show'); window.scrollTo({top:0});
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  if(!App.shown.has(id)){App.shown.add(id);const sec=p.dataset.sec;if(sec&&App.onShow[sec])App.onShow[sec]()}
+}
+function say(t){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.9;u.lang='en-US';speechSynthesis.speak(u)}
+function initSlides(el){
+  const sl=$$('.slide',el);let i=0;
+  el.insertAdjacentHTML('beforeend',`<div class="sl-ctrl"><button class="btn ghost prev">◀ Back</button><div class="dots">${sl.map(()=>'<i></i>').join('')}</div><button class="btn next">Next ▶</button></div>`);
+  const dots=$$('.dots i',el),pv=$('.prev',el),nx=$('.next',el);
+  const up=()=>{sl.forEach((s,k)=>s.classList.toggle('on',k===i));dots.forEach((d,k)=>d.classList.toggle('on',k===i));pv.disabled=i===0;nx.disabled=i===sl.length-1};
+  pv.onclick=()=>{if(i>0){i--;up()}};nx.onclick=()=>{if(i<sl.length-1){i++;up()}};up();
+}
+let toastT;
+function toast(m){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';document.body.appendChild(t)}t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+function confetti(){const em=['⭐','🌙','✨','💫','🌟'];for(let k=0;k<26;k++){const s=document.createElement('span');s.className='conf';s.textContent=em[k%em.length];s.style.left=Math.random()*100+'vw';s.style.animationDelay=Math.random()*.5+'s';s.style.fontSize=(20+Math.random()*20)+'px';document.body.appendChild(s);setTimeout(()=>s.remove(),2600)}}
+function award(sec,msg){App.done.add(sec);const c=$(`.mcard[data-go="s-${sec}"]`);if(c)c.classList.add('done');confetti();toast(msg||'Amazing work! ⭐')}
+function quiz(el,qs,onDone){
+  let score=0,ans=0;
+  el.innerHTML=qs.map((q,i)=>`<div class="qcard"><span class="qn">Question ${i+1}</span><p class="qq">${q.q}</p><div class="opts">${q.o.map((o,j)=>`<button class="opt" data-i="${i}" data-j="${j}">${o}</button>`).join('')}</div><p class="why"></p></div>`).join('')+`<div class="score-box" hidden></div>`;
+  el.addEventListener('click',e=>{const b=e.target.closest('.opt');if(!b)return;const c=b.closest('.qcard');if(c.dataset.done)return;c.dataset.done=1;
+    const q=qs[b.dataset.i],ok=+b.dataset.j===q.a;b.classList.add(ok?'right':'wrong');if(!ok)$$('.opt',c)[q.a].classList.add('right');
+    $('.why',c).innerHTML=(ok?'✅ Correct! ':'💡 ')+q.why;if(ok)score++;ans++;
+    if(ans===qs.length){const sb=$('.score-box',el);sb.hidden=false;const st=Math.round(score/qs.length*5);sb.innerHTML=`You got ${score} out of ${qs.length}! <br>${'⭐'.repeat(st)}${'☆'.repeat(5-st)}<br><span style="font-size:18px;font-weight:400">${score===qs.length?'Perfect! You are a true AI Explorer!':'Great try! Scroll up to read the explanations.'}</span>`;onDone&&onDone(score)}});
+}
+function sorter(el,items,cats,onWin){
+  const build=()=>{
+    el.innerHTML=`<p class="muted">👆 Tap a picture, then tap the box where it belongs.</p><div class="tray">${shuffle(items.map((it,i)=>({...it,i}))).map(it=>`<button class="chip" data-i="${it.i}"><span class="big">${it.e}</span><small>${it.n}</small></button>`).join('')}</div><div class="buckets">${cats.map(c=>`<div class="bucket" data-c="${c.id}"><div class="bh">${c.icon} ${c.name}</div><div class="bin"></div></div>`).join('')}</div><div class="row"><button class="btn teal chk">Check my sorting ✔</button><button class="btn ghost rst">Start again ↺</button></div><p class="fb"></p>`;
+    let sel=null;
+    el.onclick=e=>{
+      const ch=e.target.closest('.chip');
+      if(ch){$$('.chip',el).forEach(c=>c.classList.remove('sel'));if(sel===ch){sel=null;return}sel=ch;ch.classList.add('sel');ch.classList.remove('ok','bad');return}
+      const bk=e.target.closest('.bucket');
+      if(bk&&sel){$('.bin',bk).appendChild(sel);sel.classList.remove('sel');sel=null;return}
+      if(e.target.closest('.rst')){build();return}
+      if(e.target.closest('.chk')){
+        const fb=$('.fb',el);
+        if($$('.tray .chip',el).length){fb.className='fb oops';fb.textContent='Sort every picture first! 🙂';return}
+        let right=0;$$('.bucket',el).forEach(b=>$$('.chip',b).forEach(c=>{const ok=items[c.dataset.i].cat===b.dataset.c;c.classList.add(ok?'ok':'bad');if(ok)right++}));
+        if(right===items.length){fb.className='fb good';fb.textContent=`All ${right} correct! You made perfect training data! 🎉`;onWin&&onWin()}
+        else{fb.className='fb oops';fb.textContent=`${right} of ${items.length} correct. Move the red ones to the right box and check again!`}
+      }
+    };
+  };build();
+}
+window.addEventListener('DOMContentLoaded',setup);
+
+/* ===== Mini-games engine ===== */
+let _ac;const AC=()=>{if(!_ac)_ac=new (window.AudioContext||window.webkitAudioContext)();if(_ac.state==='suspended')_ac.resume();return _ac};
+function tone(f,d,type='sine',v=.25,t0=0,f2){try{const a=AC(),t=a.currentTime+t0,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.linearRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.02);g.gain.setValueAtTime(v,t+Math.max(.03,d-.06));g.gain.linearRampToValueAtTime(0,t+d);o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02)}catch(e){}}
+function clap(t0=0){try{const a=AC(),t=a.currentTime+t0,n=a.sampleRate*.12,b=a.createBuffer(1,n,a.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(n*.12));
+  const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=1400;g.gain.value=.9;s.connect(f).connect(g).connect(a.destination);s.start(t)}catch(e){}}
+const SND={
+  bird:()=>[0,.16,.32].forEach(t=>tone(2600,.09,'sine',.18,t,3600)),
+  cow:()=>tone(150,1.1,'sawtooth',.16,0,105),
+  clap:()=>clap(0),claps:()=>[0,.3,.6].forEach(t=>clap(t)),
+  bell:()=>{tone(660,.5,'sine',.3,0);tone(523,.8,'sine',.3,.5)},
+  siren:()=>{for(let k=0;k<2;k++){tone(720,.35,'triangle',.22,k*.7);tone(960,.35,'triangle',.22,k*.7+.35)}},
+  heart:()=>[0,.22,.9,1.12].forEach(t=>{tone(95,.13,'sine',.6,t);tone(190,.1,'sine',.25,t)}),
+  drum:()=>tone(110,.25,'sine',.6,0,55),
+  whistle:()=>tone(1500,.5,'sine',.15,0,1900),
+  dog:()=>{tone(420,.12,'square',.12,0,300);tone(420,.12,'square',.12,.25,300)},
+  cat:()=>tone(700,.7,'triangle',.15,0,500),
+  ok:()=>{tone(660,.12,'sine',.15);tone(880,.18,'sine',.15,.12)},
+  no:()=>tone(220,.25,'triangle',.15,0,180)
+};
+function playSnd(s){if(!s)return;if(typeof s==='number')tone(s,.35,'sine',.22);else if(SND[s])SND[s]()}
+const GS={stars:{},max:0};
+function setStars(id,n){GS.stars[id]=Math.max(GS.stars[id]||0,n);const tot=Object.values(GS.stars).reduce((a,b)=>a+b,0);$$('.totStars').forEach(e=>e.textContent=tot);
+  const c=$(`.gcard[data-go="${id}"] .gs`);if(c)c.textContent='⭐'.repeat(GS.stars[id])+'☆'.repeat(3-GS.stars[id])}
+function endBox(el,stars,msg,replay){el.insertAdjacentHTML('beforeend',`<div class="endbox"><div class="stars">${'⭐'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p style="font-size:22px;font-weight:700">${msg}</p><div class="row" style="justify-content:center"><button class="btn moon rp">↺ Play again</button><button class="btn ghost" data-go="menu">🏠 More games</button></div></div>`);
+  $('.endbox .rp',el).onclick=replay;confetti()}
+
+/* ---- PICK: one question at a time ---- */
+function gPick(el,cfg,id){
+  const rounds=cfg.shuffle===false||cfg.code?cfg.rounds:shuffle(cfg.rounds);let i=0,score=0;
+  const show=()=>{const r=rounds[i];const opts=r.o.map((o,j)=>({o,j}));const order=cfg.keepOrder||r.keep?opts:shuffle(opts);
+    el.innerHTML=`<div class="prog">${rounds.map((_,k)=>`<i class="${k<i?(rounds[k]._ok?'ok':'no'):k===i?'cur':''}"></i>`).join('')}</div>
+    ${r.code?`<div class="codeq">${r.code}</div>`:''}${r.big?`<div class="pk-big">${r.big}</div>`:''}<p class="pk-q">${r.q||cfg.ask||''}</p>
+    ${r.snd?`<div class="row" style="justify-content:center;margin:-6px 0 14px"><button class="btn lilac snd">🔊 Play sound</button></div>`:''}
+    <div class="pk-opts">${order.map(({o,j})=>{const [e,t]=Array.isArray(o)?o:[null,o];return `<button class="pk-opt" data-j="${j}">${e?`<span class="e">${e}</span>`:''}${t}</button>`}).join('')}</div>
+    <p class="fb" style="text-align:center;margin-top:14px"></p>`;
+    if(r.snd){$('.snd',el).onclick=()=>playSnd(r.snd);setTimeout(()=>playSnd(r.snd),300)}
+    let locked=false;
+    $('.pk-opts',el).onclick=e=>{const b=e.target.closest('.pk-opt');if(!b||locked)return;locked=true;const ok=+b.dataset.j===r.a;r._ok=ok;if(ok)score++;
+      b.classList.add(ok?'right':'wrong');if(!ok)$(`.pk-opt[data-j="${r.a}"]`,el).classList.add('right');playSnd(ok?'ok':'no');
+      const fb=$('.fb',el);fb.className='fb '+(ok?'good':'oops');fb.innerHTML=(ok?'⭐ Yes! ':'💡 ')+`<span style="font-weight:400;color:var(--ink)">${r.why||''}</span><br><button class="btn moon" style="margin-top:10px" id="nx">${i<rounds.length-1?'Next ➜':'Finish 🌙'}</button>`;
+      $('#nx',el).onclick=()=>{i++;if(i<rounds.length)show();else finish()}}};
+  const finish=()=>{const st=score===rounds.length?3:score>=rounds.length*.6?2:1;setStars(id,st);el.innerHTML=`<div class="prog">${rounds.map(r=>`<i class="${r._ok?'ok':'no'}"></i>`).join('')}</div>`;
+    endBox(el,st,`You got ${score} out of ${rounds.length}!`,()=>gPick(el,cfg,id))};
+  show();
+}
+
+/* ---- MEMORY MATCH ---- */
+function gMemory(el,cfg,id){
+  const cards=shuffle(cfg.pairs.flatMap((p,i)=>[{p:i,v:p[0],s:p[2]},{p:i,v:p[1],s:p[2]}]));const cols=cards.length<=12?4:cards.length<=16?4:5;
+  let open=[],moves=0,found=0;
+  el.innerHTML=`<p class="center muted">Tap two cards to find a matching pair. Moves: <b class="mv">0</b></p><div class="mem" style="grid-template-columns:repeat(${cols},1fr)">${cards.map((c,i)=>`<button class="mcell${/[a-z]/i.test(c.v)?' txt':''}" data-i="${i}">🌙</button>`).join('')}</div>`;
+  $('.mem',el).onclick=e=>{const b=e.target.closest('.mcell');if(!b||b.classList.contains('open')||b.classList.contains('done')||open.length===2)return;
+    const c=cards[b.dataset.i];b.classList.add('open');b.textContent=c.v;if(c.s)playSnd(c.s);open.push(b);
+    if(open.length===2){moves++;$('.mv',el).textContent=moves;const [x,y]=open;
+      if(cards[x.dataset.i].p===cards[y.dataset.i].p){setTimeout(()=>{x.classList.add('done');y.classList.add('done');open=[];found++;playSnd('ok');
+        if(found===cfg.pairs.length){const st=moves<=cfg.pairs.length*1.6?3:moves<=cfg.pairs.length*2.4?2:1;setStars(id,st);endBox(el,st,`All pairs found in ${moves} moves!`,()=>gMemory(el,cfg,id))}},350)}
+      else setTimeout(()=>{x.classList.remove('open');y.classList.remove('open');x.textContent=y.textContent='🌙';open=[]},900)}};
+}
+
+/* ---- PATTERN / BEAT COPY (no timer) ---- */
+function gSimon(el,cfg,id){
+  const pads=cfg.pads,cols=['#4a52c9','#1fa79c','#e9604f','#8a68dc'];let seq=[],inp=[],busy=false;const goal=cfg.max;
+  el.innerHTML=`<p class="center pk-q" id="sm">Press ▶ Start, watch${cfg.sound?' and listen':''}, then copy!</p><div class="row" style="justify-content:center;margin-bottom:12px"><span class="pill">Length: <b class="ln">0</b> / ${goal}</span></div>
+  <div class="pads">${pads.map((p,i)=>`<button class="pad" data-i="${i}" style="background:${cols[i]}">${p.e}<small>${p.n}</small></button>`).join('')}</div>
+  <div class="row" style="justify-content:center"><button class="btn moon" id="smGo">▶ Start</button><button class="btn ghost" id="smRe">🔁 Show again</button></div>`;
+  const flash=(i,d=420)=>{const b=$$('.pad',el)[i];b.classList.add('lit');playSnd(pads[i].s);setTimeout(()=>b.classList.remove('lit'),d)};
+  const playSeq=()=>{busy=true;inp=[];$('#sm',el).textContent=cfg.sound?'👂 Listen and watch…':'👀 Watch…';seq.forEach((p,k)=>setTimeout(()=>flash(p),700+k*750));
+    setTimeout(()=>{busy=false;$('#sm',el).textContent='👉 Your turn! Copy the pattern.'},700+seq.length*750)};
+  const add=()=>{seq.push(Math.floor(Math.random()*pads.length));$('.ln',el).textContent=seq.length;playSeq()};
+  $('#smGo',el).onclick=()=>{if(busy)return;seq=[];while(seq.length<cfg.start)seq.push(Math.floor(Math.random()*pads.length));$('.ln',el).textContent=seq.length;$('#smGo',el).textContent='↺ Restart';playSeq()};
+  $('#smRe',el).onclick=()=>{if(seq.length&&!busy)playSeq()};
+  $('.pads',el).onclick=e=>{const b=e.target.closest('.pad');if(!b||busy||!seq.length)return;const i=+b.dataset.i;flash(i,250);inp.push(i);
+    if(seq[inp.length-1]!==i){busy=true;$('#sm',el).textContent='Oops! No problem — watch again 🙂';setTimeout(playSeq,900);return}
+    if(inp.length===seq.length){if(seq.length>=goal){setStars(id,3);busy=true;$('#sm',el).textContent='🎉 You copied the whole pattern!';endBox(el,3,`Pattern master! You remembered ${goal} in a row!`,()=>gSimon(el,cfg,id));return}
+      busy=true;$('#sm',el).textContent='⭐ Great! One more…';setStars(id,seq.length>=goal-1?2:1);setTimeout(add,700)}};
+}
+
+/* ---- SORT ---- */
+function gSort(el,cfg,id){sorter(el,cfg.items,cfg.cats,()=>{setStars(id,3);endBox(el,3,'Perfect sorting!',()=>gSort(el,cfg,id))})}
+
+/* ---- CODING MAZE ---- */
+function parseMaze(rows){const g=[];let s,m,it=[];rows.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='L')s=[x,y];if(ch==='M')m=[x,y];if(ch==='*')it.push([x,y])}));
+  return {W:rows[0].length,H:rows.length,rock:new Set(rows.flatMap((r,y)=>[...r].map((ch,x)=>ch==='#'?x+','+y:null)).filter(Boolean)),s,m,it}}
+const DIR={U:[0,-1,'⬆️','up'],D:[0,1,'⬇️','down'],L:[-1,0,'⬅️','left'],R:[1,0,'➡️','right']};
+function solveMaze(M){ // shortest path visiting all items then moon; returns move list
+  const key=(x,y,mask)=>x+','+y+','+mask,full=(1<<M.it.length)-1;const q=[[M.s[0],M.s[1],0,[]]],seen=new Set([key(M.s[0],M.s[1],0)]);
+  while(q.length){const [x,y,mask,path]=q.shift();if(mask===full&&x===M.m[0]&&y===M.m[1])return path;
+    for(const d in DIR){const nx=x+DIR[d][0],ny=y+DIR[d][1];if(nx<0||ny<0||nx>=M.W||ny>=M.H||M.rock.has(nx+','+ny))continue;
+      let nm=mask;M.it.forEach((p,k)=>{if(p[0]===nx&&p[1]===ny)nm|=1<<k});const kk=key(nx,ny,nm);if(!seen.has(kk)){seen.add(kk);q.push([nx,ny,nm,[...path,d]])}}}
+  return null}
+const runs=path=>path.reduce((a,d)=>{if(a.length&&a[a.length-1].d===d)a[a.length-1].n++;else a.push({d,n:1});return a},[]);
+function gMaze(el,cfg,id){
+  let lv=0,prog=[],sel=-1,count=1,running=false;const solved=new Set();
+  const draw=()=>{const L=cfg.levels[lv],M=parseMaze(L.map),c=Math.min(64,Math.floor((Math.min(window.innerWidth,560)-60)/M.W));
+    if(L.bug&&!L._init){const r=runs(solveMaze(M));const k=Math.floor(r.length/2);r[k]={...r[k],n:r[k].n+1};L._prog=cfg.repeat?r:r.flatMap(s=>Array(s.n).fill({d:s.d,n:1}));L._init=1}
+    const best=runs(solveMaze(M)).length;
+    el.innerHTML=`<div class="lvls">${cfg.levels.map((l,i)=>`<button class="btn ${i===lv?'cur':'ghost'}" data-l="${i}">${solved.has(i)?'⭐':''} Level ${i+1}${l.bug?' 🐞':''}</button>`).join('')}</div>
+    <div class="kidtip">${L.bug?'🐞 <b>Fix the bug!</b> This program has a mistake. Tap a block to select it, ✖ to delete it, and add the right blocks.':`🎯 <b>Mission:</b> collect all ${cfg.item} then take Luna to the 🌙 moon.`}${cfg.repeat?` &nbsp;🏅 Can you do it in <b>${best} blocks</b> or fewer?`:''}</div>
+    <div class="maze-wrap"><div><div class="grid" style="--c:${c}px;grid-template-columns:repeat(${M.W},var(--c))">${Array.from({length:M.H},(_,y)=>Array.from({length:M.W},(_,x)=>{const k=x+','+y;
+      return `<div class="cell${M.rock.has(k)?' rock':''}" data-k="${k}">${M.rock.has(k)?cfg.rock:M.m[0]===x&&M.m[1]===y?'🌙':M.it.some(p=>p[0]===x&&p[1]===y)?cfg.item:''}</div>`}).join('')).join('')}</div></div>
+    <div><b>🧱 Blocks</b><div class="pal">${Object.entries(DIR).map(([d,v])=>`<button class="btn" data-d="${d}">${v[2]}</button>`).join('')}</div>
+    ${cfg.repeat?`<div class="cnt"><b>🔁 Repeat</b>${[1,2,3,4,5,6].map(n=>`<button class="btn ghost ${n===count?'on':''}" data-n="${n}">×${n}</button>`).join('')}</div>`:''}
+    <div class="progline" id="pl"></div>
+    <div class="row"><button class="btn teal" id="go">▶ Run</button><button class="btn ghost" id="clr">🧽 Clear</button>${L.bug?'<button class="btn ghost" id="rb">↺ Reset bug</button>':''}</div>
+    <p class="fb" id="mfb"></p><details><summary class="muted" style="cursor:pointer">👀 See it as real code</summary><div class="codebox" id="mcode" style="margin-top:8px"></div></details></div></div>`;
+    if(L.bug&&!prog.length)prog=L._prog.map(s=>({...s}));
+    placeLuna(M.s);renderProg();
+    $('.lvls',el).onclick=e=>{const b=e.target.closest('[data-l]');if(b&&!running){lv=+b.dataset.l;prog=[];sel=-1;draw()}};
+    $('.pal',el).onclick=e=>{const b=e.target.closest('[data-d]');if(!b||running)return;if(prog.length>=24){toast('That is a lot of blocks! Try using 🔁 repeat.');return}
+      const blk={d:b.dataset.d,n:count};if(sel>=0){prog.splice(sel+1,0,blk);sel++}else prog.push(blk);renderProg()};
+    if(cfg.repeat)$('.cnt',el).onclick=e=>{const b=e.target.closest('[data-n]');if(!b)return;count=+b.dataset.n;$$('.cnt [data-n]',el).forEach(x=>x.classList.toggle('on',x===b))};
+    $('#pl',el).onclick=e=>{if(running)return;const x=e.target.closest('.x');const b=e.target.closest('.pb');if(!b)return;const i=+b.dataset.i;if(x){prog.splice(i,1);sel=Math.min(sel,prog.length-1);if(sel===i)sel=-1}else sel=sel===i?-1:i;renderProg()};
+    $('#clr',el).onclick=()=>{if(!running){prog=[];sel=-1;placeLuna(M.s);renderProg();$('#mfb',el).textContent=''}};
+    if(L.bug)$('#rb',el).onclick=()=>{if(!running){prog=L._prog.map(s=>({...s}));sel=-1;placeLuna(M.s);renderProg()}};
+    $('#go',el).onclick=()=>run(M,best);
+  };
+  const placeLuna=p=>{$$('.cell .luna',el).forEach(e=>e.remove());const c=$(`.cell[data-k="${p[0]},${p[1]}"]`,el);if(c)c.insertAdjacentHTML('beforeend',`<div class="luna">${LUNA}</div>`)};
+  const renderProg=()=>{$('#pl',el).innerHTML=prog.length?prog.map((s,i)=>`<span class="pb ${s.n>1?'rep':''} ${i===sel?'sel':''}" data-i="${i}">${s.n>1?'🔁'+s.n+'× ':''}${DIR[s.d][2]}<span class="x">✖</span></span>`).join(''):'<span class="muted">Tap the arrow blocks to build your program…</span>';
+    $('#mcode',el).innerHTML=prog.map(s=>s.n>1?`<span class="k">for</span> i <span class="k">in</span> range(${s.n}):\n    luna.move_${DIR[s.d][3]}()`:`luna.move_${DIR[s.d][3]}()`).join('\n')||'# empty program'};
+  const run=(M,best)=>{if(running||!prog.length){if(!prog.length)toast('Add some blocks first!');return}running=true;$$('.cell.trail',el).forEach(c=>c.classList.remove('trail'));
+    M.it.forEach(p=>{const c=$(`.cell[data-k="${p[0]},${p[1]}"]`,el);c.textContent=cfg.item});
+    const moves=prog.flatMap((s,i)=>Array(s.n).fill([s.d,i]));let p=[...M.s],got=new Set(),k=0;const fb=$('#mfb',el);fb.textContent='';placeLuna(p);
+    const step=()=>{$$('.pb',el).forEach(b=>b.classList.remove('run'));
+      if(k>=moves.length){running=false;const atM=p[0]===M.m[0]&&p[1]===M.m[1];
+        if(atM&&got.size===M.it.length){solved.add(lv);const nL=cfg.levels.length;setStars(id,solved.size===nL?3:solved.size>=nL/2?2:1);$$('.lvls [data-l]',el)[lv].textContent=`⭐ Level ${lv+1}${cfg.levels[lv].bug?' 🐞':''}`;
+          fb.className='fb good';fb.innerHTML=`🎉 Luna reached the moon!${cfg.repeat?` You used ${prog.length} blocks${prog.length<=best?' — super efficient! 🏅':` (best is ${best} — try 🔁 repeat!)`}.`:''} ${lv<cfg.levels.length-1?'<button class="btn moon sm" id="nl">Next level ➜</button>':''}`;
+          playSnd('ok');if(solved.size===cfg.levels.length){confetti();toast('All levels solved! 🌟')}
+          const nl=$('#nl',el);if(nl)nl.onclick=()=>{lv++;prog=[];sel=-1;draw()}}
+        else{fb.className='fb oops';fb.textContent=atM?`Collect all ${cfg.item} first!`:'Luna did not reach the moon. Change your blocks and try again!';playSnd('no')}return}
+      const [d,bi]=moves[k];$(`.pb[data-i="${bi}"]`,el)?.classList.add('run');const nx=p[0]+DIR[d][0],ny=p[1]+DIR[d][1];
+      if(nx<0||ny<0||nx>=M.W||ny>=M.H||M.rock.has(nx+','+ny)){running=false;fb.className='fb oops';fb.textContent=`💥 Bump! Luna hit ${nx<0||ny<0||nx>=M.W||ny>=M.H?'the edge':'a '+cfg.rock} at block ${bi+1}. Fix that block!`;playSnd('no');return}
+      $(`.cell[data-k="${p[0]},${p[1]}"]`,el).classList.add('trail');p=[nx,ny];
+      const ii=M.it.findIndex(q=>q[0]===nx&&q[1]===ny);if(ii>=0&&!got.has(ii)){got.add(ii);$(`.cell[data-k="${nx},${ny}"]`,el).textContent='✨';tone(880,.1,'sine',.12)}
+      placeLuna(p);k++;setTimeout(step,380)};
+    setTimeout(step,250)};
+  draw();
+}
+
+/* ---- set up pages ---- */
+const GAMES={pick:gPick,memory:gMemory,simon:gSimon,sort:gSort,maze:gMaze};
+function buildMini(list){
+  const g1=list.filter(g=>!g.code),g2=list.filter(g=>g.code);
+  const card=g=>`<button class="gcard ${g.code?'code':''}" data-go="${g.id}"><span class="gi">${g.icon}</span><span><span class="gt">${g.title}</span><span class="gd">${g.desc}</span></span><span class="gs">☆☆☆</span></button>`;
+  $('#gList').innerHTML=`<div class="grp-h">🎮 Games</div><div class="grid2">${g1.map(card).join('')}</div><div class="grp-h">💻 Coding Puzzles</div><div class="grid2">${g2.map(card).join('')}</div>`;
+  $('#tot').textContent=list.length*3;
+  list.forEach(g=>$('main').insertAdjacentHTML('beforeend',`<section class="page" id="${g.id}"><div class="ghead"><div class="gi">${g.icon}</div><div><div class="sec-kick">${g.code?'💻 Coding puzzle':'🎮 Game'}</div><h2>${g.title}</h2></div></div>${g.tip?`<div class="kidtip">💡 <b>Tip:</b> ${g.tip}</div>`:''}<div class="card gbody"></div><div class="sec-nav"><button class="btn ghost" data-go="menu">← Back to games</button></div></section>`));
+  const started=new Set(),_go=go;
+  go=function(id){_go(id);const g=list.find(x=>x.id===id);if(g&&!started.has(id)){started.add(id);GAMES[g.type]($('#'+id+' .gbody'),g,id)}};
+}
+
+// maze layouts per class; topics get transformed variants
+const MAZES={
+ c3:[
+  ['L....','.....','..*..','.....','....M'],
+  ['L.#..','..#*.','.....','.#...','...#M'],
+  ['*...L','.##..','.....','..##.','M...*']],
+ c4:[
+  ['L.....','......','......','......','......','.....M'],
+  ['L....*','####..','......','..####','*.....','....#M'],
+  ['L..#..','.#.#.*','.#...#','.####.','*.....','#...#M'],
+  ['...*..','.L##..','..#...','*.#.#.','..#.#.','....#M']],
+ c5:[
+  ['L......','######.','*......','.######','.......','######.','M.....*'],
+  ['L..#...','.#.#.#.','.#...#*','.#####.','*......','#####.#','M......'],
+  ['...#..*','.L.#...','...#.#.','##...#.','*..#.#.','.#.#...','.#...#M'],
+  ['L.....#','.####.#','.#*.#..','.#..#.#','.##.#..','......#','#*#...M'],
+  ['*.#...L','..#.#..','..#.#.#','....#..','###.##.','*......','###.##M']]
+};
+function tf(rows,t){let g=rows.map(r=>[...r]);
+  if(t&1)g=g.map(r=>r.slice().reverse());if(t&2)g=g.slice().reverse();return g.map(r=>r.join(''))}
+// level spec per class: which layouts & which are bug levels
+const LEVELSPEC={c3:{idx:[0,1,2],bug:[]},c4:{idx:[0,1,2,3],bug:[3]},c5:{idx:[0,1,2,3,4],bug:[1,3]}};
+function mazeLevels(cls,topic){const spec=LEVELSPEC[cls];return spec.idx.map((i,k)=>({map:tf(MAZES[cls][i],topic),bug:spec.bug.includes(k)}))}
+if(typeof module!=='undefined')module.exports={MAZES,tf,mazeLevels};
+</script><script>const E=(...a)=>a.map(x=>[x,'']);
+const BEAT=[{e:'🥁',n:'Drum',s:'drum'},{e:'👏',n:'Clap',s:'clap'},{e:'🔔',n:'Bell',s:'bell'},{e:'🎵',n:'Whistle',s:'whistle'}];
+const MINI={
+c3:[
+ {id:'g1',type:'simon',icon:'🥁',title:'Copy the Beat',desc:'Listen and copy the sounds',tip:'Close your eyes and just listen the first time!',sound:1,start:2,max:4,pads:BEAT},
+ {id:'g2',type:'memory',icon:'🎧',title:'Sound Twins',desc:'Flip cards, hear sounds, find pairs',tip:'Each card plays a sound. Remember where you heard it!',pairs:[['🐦','🐦','bird'],['🐄','🐄','cow'],['👏','👏','clap'],['🔔','🔔','bell'],['🥁','🥁','drum']]},
+ {id:'g3',type:'pick',icon:'👂',title:'Who Made That Sound?',desc:'Listen and pick the right picture',tip:'Is it high or low? Short or long?',ask:'What made this sound?',rounds:[
+  {snd:'bird',o:[['🐦','Bird'],['🐄','Cow']],a:0,why:'High, quick chirps — a bird!'},
+  {snd:'cow',o:[['🐦','Bird'],['🐄','Cow']],a:1,why:'Low and long — a cow mooing.'},
+  {snd:'claps',o:[['👏','Clapping'],['🔔','Bell']],a:0,why:'Short, sharp sounds — claps!'},
+  {snd:'bell',o:[['🥁','Drum'],['🔔','Doorbell']],a:1,why:'Ding-dong!'},
+  {snd:'drum',o:[['🥁','Drum'],['🐦','Bird']],a:0,why:'A low BOOM — a drum.'}]},
+ {id:'g4',type:'maze',code:1,icon:'🗺️',title:"Luna's Music Hunt",desc:'Use arrows to collect music notes',tip:'Count the squares before you choose your arrows!',item:'🎵',rock:'🔇',repeat:false,levels:mazeLevels('c3',1)},
+ {id:'g5',type:'pick',code:1,icon:'📜',title:'Read the Rule',desc:'What will Luna do?',tip:'Find the WHEN that matches.',rounds:[
+  {code:'WHEN Luna hears 👏 clap\n   DO jump ⬆️\nWHEN Luna sees 👋 wave\n   DO spin 🌀',big:'👏',q:'Someone claps. What does Luna do?',o:['Jump ⬆️','Spin 🌀','Sleep 😴'],a:0,why:'Clap → jump!'},
+  {code:'WHEN Luna hears 👏 clap\n   DO jump ⬆️\nWHEN Luna sees 👋 wave\n   DO spin 🌀',big:'👋',q:'Someone waves. What does Luna do?',o:['Jump ⬆️','Spin 🌀','Dance 💃'],a:1,why:'Wave → spin!'},
+  {code:'WHEN Luna hears 🔔 bell\n   DO open the door 🚪',big:'🥁',q:'Luna hears a drum. Does she open the door?',o:['Yes','No'],a:1,why:'The rule is only for the bell.'},
+  {code:'WHEN Luna hears 🎵 music\n   DO dance 💃',big:'🎵',q:'Music plays. What does Luna do?',o:['Dance 💃','Cry 😢','Run 🏃'],a:0,why:'Music → dance!'}]}
+],
+c4:[
+ {id:'g1',type:'simon',icon:'🥁',title:'Copy the Beat',desc:'Listen and copy longer beats',tip:'Tap along quietly on your knee while you listen.',sound:1,start:2,max:5,pads:BEAT},
+ {id:'g2',type:'memory',icon:'🎧',title:'Sound Twins',desc:'Find 6 sound pairs',tip:'Listen for high vs low to remember.',pairs:[['🐦','🐦','bird'],['🐄','🐄','cow'],['👏','👏','clap'],['🔔','🔔','bell'],['🚑','🚑','siren'],['❤️','❤️','heart']]},
+ {id:'g3',type:'pick',icon:'👂',title:'Who Made That Sound?',desc:'Listen carefully — some are tricky',tip:'Listen for the pattern: one note, two notes, or up-and-down?',ask:'What made this sound?',rounds:[
+  {snd:'siren',o:[['🚑','Ambulance'],['🔔','Doorbell'],['🐦','Bird']],a:0,why:'Two notes going up and down — a siren.'},
+  {snd:'heart',o:[['🥁','Fast drum'],['❤️','Heartbeat'],['👏','Clap']],a:1,why:'Lub-dub, lub-dub — a heartbeat.'},
+  {snd:'bell',o:[['🚑','Siren'],['🔔','Doorbell'],['🐄','Cow']],a:1,why:'Two clear notes, once — ding-dong.'},
+  {snd:'cat',o:[['🐱','Cat'],['🐶','Dog'],['🐦','Bird']],a:0,why:'A long falling "meow".'},
+  {snd:'dog',o:[['🐱','Cat'],['🐶','Dog'],['🐄','Cow']],a:1,why:'Two short barks — woof woof!'},
+  {snd:'whistle',o:[['🎵','Whistle'],['🥁','Drum'],['❤️','Heartbeat']],a:0,why:'A high sliding sound — a whistle.'}]},
+ {id:'g4',type:'sort',icon:'📊',title:'High or Low?',desc:'Sort sounds by pitch',tip:'Small things often make high sounds. Big things often make low sounds.',items:[
+  {e:'🐦',n:'Bird tweet',cat:'hi'},{e:'🐭',n:'Mouse squeak',cat:'hi'},{e:'🎵',n:'Whistle',cat:'hi'},{e:'🔔',n:'Tiny bell',cat:'hi'},
+  {e:'🐄',n:'Cow moo',cat:'lo'},{e:'🥁',n:'Big drum',cat:'lo'},{e:'🦁',n:'Lion roar',cat:'lo'},{e:'⛈️',n:'Thunder',cat:'lo'}],
+  cats:[{id:'hi',name:'High sound',icon:'⬆️'},{id:'lo',name:'Low sound',icon:'⬇️'}]},
+ {id:'g5',type:'maze',code:1,icon:'🗺️',title:"Luna's Music Hunt",desc:'Arrows, 🔁 repeat and a bug to fix',tip:'Use 🔁 repeat for long straight paths!',item:'🎵',rock:'🔇',repeat:true,levels:mazeLevels('c4',1)},
+ {id:'g6',type:'pick',code:1,icon:'📜',title:'Read the Code',desc:'Predict what Luna does',tip:'Read every line in order, like a computer.',rounds:[
+  {code:'<span class="k">when</span> hear(<span class="s">"clap"</span>):\n    luna.jump()\n<span class="k">when</span> see(<span class="s">"wave"</span>):\n    luna.wave_back()',big:'👋',q:'What does Luna do?',o:['jump','wave_back','nothing'],a:1,why:'A wave matches the second rule.'},
+  {code:'claps = 0\nclaps = claps + 1\nclaps = claps + 1\nsay(claps)',q:'What number does Luna say?',o:['0','1','2'],a:2,why:'0 + 1 + 1 = 2.'},
+  {code:'<span class="k">if</span> loudness > 50:\n    say(<span class="s">"Too loud!"</span>)\n<span class="k">else</span>:\n    say(<span class="s">"OK"</span>)',q:'The loudness is 80. What does Luna say?',o:['Too loud!','OK'],a:0,why:'80 is bigger than 50.'},
+  {code:'<span class="k">if</span> pitch == <span class="s">"high"</span>:\n    say(<span class="s">"Bird"</span>)\n<span class="k">else</span>:\n    say(<span class="s">"Cow"</span>)',big:'🐭',q:'A mouse squeaks (high). What does Luna say?',o:['Mouse','Bird','Cow'],a:1,why:'The code only knows "Bird" for high sounds — it never learned mice!'},
+  {code:'<span class="k">for</span> i <span class="k">in</span> range(3):\n    play(<span class="s">"drum"</span>)',q:'How many drum beats?',o:['1','3','4'],a:1,why:'range(3) repeats 3 times.'}]}
+],
+c5:[
+ {id:'g1',type:'simon',icon:'🥁',title:'Copy the Beat — Expert',desc:'Remember beats up to 7 long',tip:'Turn the beat into words: "boom-clap-ding…"',sound:1,start:3,max:7,pads:BEAT},
+ {id:'g2',type:'memory',icon:'🧠',title:'Sound & Vision Words',desc:'Match AI words with their meaning',tip:'Think about microphones for ears and cameras for eyes.',pairs:[['Microphone','The AI\'s ears'],['Camera','The AI\'s eyes'],['Pitch','How high or low a sound is'],['Volume','How loud a sound is'],['Frame','One picture of a video'],['Gesture','A movement with a meaning'],['Confidence','How sure the AI is'],['Wake word','A word that turns on a speaker']]},
+ {id:'g3',type:'pick',icon:'👂',title:'Sound Detective — Expert',desc:'Tricky sounds with 4 choices',tip:'Listen 2 times: once for pitch, once for rhythm.',ask:'What made this sound?',rounds:[
+  {snd:'heart',o:[['🥁','Drum'],['❤️','Heartbeat'],['👏','Clap'],['🚪','Knock']],a:1,why:'Pairs of low thumps: lub-dub.'},
+  {snd:'siren',o:[['🚑','Siren'],['🔔','Doorbell'],['🎵','Song'],['📱','Phone']],a:0,why:'It keeps switching between 2 notes.'},
+  {snd:'whistle',o:[['🐦','Bird'],['🎵','Whistle'],['🐭','Mouse'],['🔔','Bell']],a:1,why:'One smooth sliding note — a whistle. A bird has many short chirps.'},
+  {snd:'cat',o:[['🐱','Cat'],['🐶','Dog'],['🐄','Cow'],['👶','Baby']],a:0,why:'Meow slides from high to lower.'},
+  {snd:'claps',o:[['👏','3 claps'],['👏','2 claps'],['🥁','Drum'],['🚪','Door slam']],a:0,keep:1,why:'Count the sharp bursts: 3!'},
+  {snd:'dog',o:[['🐶','Dog'],['🐱','Cat'],['🦆','Duck'],['🐸','Frog']],a:0,why:'Two short rough barks.'}]},
+ {id:'g4',type:'sort',icon:'📊',title:'Ears or Eyes?',desc:'Does the AI need a microphone or a camera?',tip:'Ask: does it need to HEAR or to SEE?',items:[
+  {e:'🗣️',n:'Understand "play music"',cat:'mic'},{e:'👏',n:'Count claps',cat:'mic'},{e:'🎵',n:'Name a song',cat:'mic'},{e:'🚨',n:'Hear a fire alarm',cat:'mic'},
+  {e:'👋',n:'Notice a wave',cat:'cam'},{e:'🕺',n:'Copy dance moves',cat:'cam'},{e:'🚦',n:'Read a traffic light',cat:'cam'},{e:'😊',n:'See a smile',cat:'cam'},{e:'🏃',n:'Count jumping jacks',cat:'cam'},{e:'🐕',n:'Hear a dog bark',cat:'mic'}],
+  cats:[{id:'mic',name:'Microphone (ears)',icon:'🎤'},{id:'cam',name:'Camera (eyes)',icon:'📷'}]},
+ {id:'g5',type:'pick',icon:'🎞️',title:'Frame Reader',desc:'Read the frames like an AI',tip:'Compare each frame with the one before. What changed?',ask:'What movement is this?',rounds:[
+  {big:'🧍 🙋 🧍 🙋',o:['Waving','Bowing','Sitting','Sleeping'],a:0,why:'One arm up, down, up — waving.'},
+  {big:'🧍 🙇 🧍 🙇',o:['Jumping','Bowing','Running','Clapping'],a:1,why:'Bending forward and up again.'},
+  {big:'🧍 🚶 🏃 🏃',o:['Stopping','Speeding up','Sitting down','Dancing'],a:1,why:'Standing → walking → running.'},
+  {big:'🏃 🚶 🧍 🧎',o:['Speeding up','Slowing down, then kneeling','Jumping','Waving'],a:1,why:'Run → walk → stand → kneel.'},
+  {big:'🧍 🙆 🧍 🙆',o:['Jumping jacks','Reading','Bowing','Swimming'],a:0,why:'Both arms up over the head again and again.'}]},
+ {id:'g6',type:'maze',code:1,icon:'🗺️',title:"Luna's Music Hunt",desc:'5 levels, 🔁 loops and 2 bugs to fix',tip:'Fewer blocks = smarter code. Aim for the 🏅 number!',item:'🎵',rock:'🔇',repeat:true,levels:mazeLevels('c5',1)},
+ {id:'g7',type:'pick',code:1,icon:'📜',title:'Code Detective',desc:'Confidence, loops and counters',tip:'Write down each variable as it changes.',rounds:[
+  {code:'event, sure = <span class="s">"clap"</span>, 62\n<span class="k">if</span> sure >= 75:\n    luna.jump()\n<span class="k">else</span>:\n    luna.wait()',q:'What does Luna do?',o:['jump','wait'],a:1,why:'62 is less than 75, so the AI is not sure enough.'},
+  {code:'limit = 40\n<span class="k">for</span> sure <span class="k">in</span> [90, 35, 60]:\n    <span class="k">if</span> sure >= limit:\n        luna.jump()',q:'How many times does Luna jump?',o:['1','2','3'],a:1,why:'90 and 60 pass the limit; 35 does not.'},
+  {code:'claps = 0\n<span class="k">for</span> s <span class="k">in</span> [<span class="s">"clap"</span>,<span class="s">"drum"</span>,<span class="s">"clap"</span>,<span class="s">"clap"</span>]:\n    <span class="k">if</span> s == <span class="s">"clap"</span>:\n        claps += 1\nsay(claps)',q:'What does Luna say?',o:['2','3','4'],a:1,why:'Three of the sounds are claps.'},
+  {code:'frames = [<span class="s">"up"</span>,<span class="s">"down"</span>,<span class="s">"up"</span>,<span class="s">"down"</span>]\n<span class="k">if</span> frames.count(<span class="s">"up"</span>) >= 2:\n    say(<span class="s">"Waving!"</span>)',q:'What does Luna say?',o:['Waving!','Nothing'],a:0,why:'"up" appears 2 times, so it says Waving!'},
+  {code:'<span class="k">if</span> pitch > 600 <span class="k">and</span> length < 1:\n    say(<span class="s">"Bird"</span>)\n<span class="k">elif</span> pitch < 300:\n    say(<span class="s">"Cow"</span>)\n<span class="k">else</span>:\n    say(<span class="s">"Not sure"</span>)',q:'pitch = 450, length = 2. What does Luna say?',o:['Bird','Cow','Not sure'],a:2,why:'450 is not above 600 and not below 300, so the else part runs.'},
+  {code:'limit = 20',q:'If the confidence limit is only 20%, what will happen?',o:['Luna reacts to lots of noise by mistake','Luna never reacts','Luna gets faster','Nothing changes'],a:0,why:'A very low limit lets wrong guesses through.'}]}
+]};
+
+buildMini(MINI.c3);</script></body></html>
